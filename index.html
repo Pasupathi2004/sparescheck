@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventory App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="loginPage">
+      <div class="section">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username" />
+        <input type="password" id="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+        <p id="loginMessage" class="message"></p>
+      </div>
+    </div>
+
+    <div id="appPage" class="hidden">
+      <header>
+        Inventory Checker
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+      </header>
+
+      <div id="overlay" onclick="toggleMenu()"></div>
+
+      <div id="sideMenu" class="side-menu hidden">
+        <button onclick="openAdd()">➕ Add Item</button>
+        <button onclick="openUpdate()">✏️ Update Item</button>
+        <button onclick="openDelete()">🗑️ Delete Item</button>
+        <button onclick="showSpares()">📦 Spares List</button>
+        <button onclick="downloadCSV()">⬇️ Download CSV</button>
+      </div>
+
+      <div id="main" class="section">
+        <h3>Search Inventory</h3>
+        <input
+          id="searchInput"
+          oninput="showSuggestions()"
+          placeholder="Search item name"
+        />
+        <div id="suggestBox" class="suggestions"></div>
+        <button onclick="startListening()">🎤 Voice Search</button>
+        <button onclick="searchItem()">Search</button>
+        <div id="searchResult" class="result"></div>
+      </div>
+
+      <!-- Add Section -->
+      <div id="addSection" class="section hidden">
+        <h3>Add Item</h3>
+        <input
+          id="newItem"
+          oninput="showAddSuggestions()"
+          placeholder="Item name"
+        />
+        <div id="suggestAdd" class="suggestions"></div>
+        <input id="newRack" placeholder="Rack" />
+        <input id="newBin" placeholder="Bin" />
+        <input id="newQty" type="number" placeholder="Quantity" />
+        <button onclick="addItem()">Add</button>
+        <button class="back-button" onclick="goBack()">Back</button>
+      </div>
+
+      <!-- Update Section -->
+      <div id="updateSection" class="section hidden">
+        <h3>Update Quantity</h3>
+        <input
+          id="updateItem"
+          oninput="showUpdateSuggestions()"
+          placeholder="Item name"
+        />
+        <div id="suggestUpdate" class="suggestions"></div>
+        <input id="updateQty" type="number" placeholder="New Quantity" />
+        <button onclick="updateItem()">Update</button>
+        <button class="back-button" onclick="goBack()">Back</button>
+      </div>
+
+      <!-- Delete Section -->
+      <div id="deleteSection" class="section hidden">
+        <h3>Delete Item</h3>
+        <input
+          id="deleteItem"
+          oninput="showDeleteSuggestions()"
+          placeholder="Item name"
+        />
+        <div id="suggestDelete" class="suggestions"></div>
+        <button onclick="deleteItem()">Delete</button>
+        <button class="back-button" onclick="goBack()">Back</button>
+      </div>
+
+      <!-- Spares List -->
+      <div id="sparesSection" class="section hidden">
+        <h3>Spares List</h3>
+        <div id="sparesList"></div>
+        <button class="back-button" onclick="goBack()">Back</button>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+
+      function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const error = document.getElementById("loginMessage");
+
+        if (username === "admin" && password === "admin123") {
+          document.getElementById("loginPage").classList.add("hidden");
+          document.getElementById("appPage").classList.remove("hidden");
+          error.textContent = "";
+        } else {
+          error.textContent = "❌ Invalid credentials";
+        }
+      }
+
+      async function searchItem() {
+        const name = document.getElementById("searchInput").value.toLowerCase();
+        const result = document.getElementById("searchResult");
+        try {
+          const res = await fetch(`${API_BASE}/search?name=${name}`);
+          if (!res.ok) throw new Error("Item not found");
+          const item = await res.json();
+          console.log(item.updated);
+          result.innerHTML = `
+            <p><strong>Item:</strong> ${name}</p>
+            <p><strong>Rack:</strong> ${item.rack}</p>
+            <p><strong>Bin:</strong> ${item.bin}</p>
+            <p><strong>Quantity:</strong> ${item.quantity}</p>
+            <p><strong>Last Updated:</strong> ${item.updated}</p>`;
+        } catch (err) {
+          result.innerHTML = `<p style="color:red;">❌ ${err.message}</p>`;
+        }
+      }
+
+      async function addItem() {
+        const name = document.getElementById("newItem").value.toLowerCase();
+        const rack = document.getElementById("newRack").value;
+        const bin = document.getElementById("newBin").value;
+        const qty = parseInt(document.getElementById("newQty").value);
+        if (!name || !rack || !bin || isNaN(qty)) {
+          return alert("❌ Fill all fields!");
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/add`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, rack, bin, quantity: qty }),
+          });
+          if (!res.ok) throw new Error("Failed to add item");
+          alert("✅ Item added!");
+          goBack();
+        } catch (err) {
+          alert(`❌ ${err.message}`);
+        }
+      }
+
+      async function updateItem() {
+        const name = document.getElementById("updateItem").value.toLowerCase();
+        const qty = parseInt(document.getElementById("updateQty").value);
+        if (isNaN(qty)) return alert("❌ Enter valid quantity");
+
+        try {
+          const res = await fetch(`${API_BASE}/update`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, quantity: qty }),
+          });
+          if (!res.ok) throw new Error("Item not found or failed to update");
+          alert("✅ Quantity updated!");
+          goBack();
+        } catch (err) {
+          alert(`❌ ${err.message}`);
+        }
+      }
+
+      async function deleteItem() {
+        const name = document.getElementById("deleteItem").value.toLowerCase();
+        try {
+          const res = await fetch(`${API_BASE}/delete`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+          });
+          if (!res.ok) throw new Error("Item not found");
+          alert("✅ Item deleted!");
+          goBack();
+        } catch (err) {
+          alert(`❌ ${err.message}`);
+        }
+      }
+
+      async function showSpares() {
+        toggleMenu();
+        goBack();
+        try {
+          const res = await fetch(`${API_BASE}/spares`);
+          const items = await res.json();
+          const table = `
+            <table border="1">
+              <tr><th>Item</th><th>Rack</th><th>Bin</th><th>Quantity</th><th>Last Updated</th></tr>
+              ${items
+                .map(({ name, rack, bin, quantity, updated }) => {
+                  const formatted = items.updated;
+                  console.log(updated);
+                  return `<tr><td>${name}</td><td>${rack}</td><td>${bin}</td><td>${quantity}</td><td>${updated}</td></tr>`;
+                })
+                .join("")}
+            </table>`;
+          document.getElementById("sparesList").innerHTML = table;
+          document.getElementById("sparesSection").classList.remove("hidden");
+        } catch (err) {
+          alert("❌ Failed to load inventory");
+        }
+      }
+
+      function goBack() {
+        document.getElementById("searchResult").innerHTML = "";
+        document.getElementById("sparesSection").classList.add("hidden");
+        document.getElementById("addSection").classList.add("hidden");
+        document.getElementById("updateSection").classList.add("hidden");
+        document.getElementById("deleteSection").classList.add("hidden");
+      }
+
+      function toggleMenu() {
+        document.getElementById("sideMenu").classList.toggle("hidden");
+      }
+
+      function openAdd() {
+        document.getElementById("addSection").classList.remove("hidden");
+        document.getElementById("updateSection").classList.add("hidden");
+        document.getElementById("deleteSection").classList.add("hidden");
+      }
+
+      function openUpdate() {
+        document.getElementById("updateSection").classList.remove("hidden");
+        document.getElementById("addSection").classList.add("hidden");
+        document.getElementById("deleteSection").classList.add("hidden");
+      }
+
+      function openDelete() {
+        document.getElementById("deleteSection").classList.remove("hidden");
+        document.getElementById("addSection").classList.add("hidden");
+        document.getElementById("updateSection").classList.add("hidden");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,195 @@
+/* General Styles */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f0f2f5;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2e8b57;
+  color: white;
+  padding: 16px;
+  font-size: 20px;
+}
+
+.hamburger {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.side-menu {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  background: #1f2937;
+  color: white;
+  width: 30%;
+  padding: 20px;
+  transition: right 0.3s;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.side-menu.active {
+  right: 0;
+}
+
+.side-menu button {
+  background: #2e8b57;
+  border: none;
+  margin: 10px 0;
+  padding: 12px;
+  color: white;
+  font-size: 16px;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.side-menu button:hover {
+  background: #246b44;
+}
+
+#overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 5;
+}
+
+.section {
+  padding: 20px;
+}
+
+input,
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+}
+
+input:focus {
+  outline: none;
+  border: 1px solid #2e8b57;
+  background-color: #e8f5f0;
+}
+
+button {
+  background: #2e8b57;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #246b44;
+}
+
+.suggestions {
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  border-radius: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.suggestions div {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.suggestions div:hover {
+  background: #f0f0f0;
+}
+
+.result,
+.message {
+  background: #ffffff;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.hidden {
+  display: none;
+}
+
+.back-button {
+  background: #d9534f;
+  color: white;
+}
+
+.back-button:hover {
+  background: #c9302c;
+}
+
+#sparesList table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#sparesList th,
+#sparesList td {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+#sparesList th {
+  background-color: #2e8b57;
+  color: white;
+}
+
+#sparesList tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Mobile Styling */
+@media (max-width: 600px) {
+  .side-menu {
+    width: 200px;
+  }
+
+  header {
+    font-size: 16px;
+  }
+
+  .hamburger {
+    font-size: 22px;
+  }
+
+  input,
+  button {
+    font-size: 14px;
+  }
+
+  .section {
+    padding: 15px;
+  }
+}
